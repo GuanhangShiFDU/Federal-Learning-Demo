@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Conda
+.env
+.venv
+venv/
+conda-meta/
+
+# Node
+node_modules/
+dist/
+
+# Logs
+*.log
+
+# HuggingFace
+.cache/
+huggingface/
+
+# Models
+*.bin
+*.safetensors
+
+# macOS
+.DS_Store
+
+# tmux
+.tmux/
+
+# Vite
+frontend/dist/
+
+# Python env
+miniconda3/
+
+# IDE
+.vscode/
+.idea/

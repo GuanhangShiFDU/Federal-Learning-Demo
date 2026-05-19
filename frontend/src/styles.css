@@ -1,0 +1,148 @@
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Arial, sans-serif;
+  background: #f5f7fb;
+  color: #0f172a;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.hero {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  font-size: 40px;
+  margin: 18px 0 8px;
+}
+
+.hero p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.badge {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin-right: 8px;
+  font-size: 13px;
+}
+
+.layout {
+  display: grid;
+  gap: 24px;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin: 16px 0;
+  font-weight: 600;
+}
+
+select,
+input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.metric-card p {
+  color: #64748b;
+  margin: 0;
+}
+
+.metric-card h3 {
+  font-size: 28px;
+  margin: 8px 0;
+}
+
+.metric-card span {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.chart-card {
+  min-height: 420px;
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.flow-card {
+  background: #f8fafc;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+@media (max-width: 900px) {
+  .metrics,
+  .flow-grid {
+    grid-template-columns: 1fr;
+  }
+}

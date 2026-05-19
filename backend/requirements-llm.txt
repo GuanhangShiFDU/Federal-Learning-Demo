@@ -1,0 +1,7 @@
+transformers>=4.46.0
+accelerate
+peft
+bitsandbytes
+sentencepiece
+safetensors
+huggingface_hub
