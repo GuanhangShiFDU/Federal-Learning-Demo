@@ -30,11 +30,11 @@ npm run install:all
 
 2. 启动
 
-'''
+```bash
 conda activate sf
 export CUDA_VISIBLE_DEVICES=1
 npm start
-'''
+```
 
 
 ```
