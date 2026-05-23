@@ -11,6 +11,7 @@ from app.services.qwen_lora_fed_runner import run_qwen_lora_federated_demo
 
 if __name__ == "__main__":
     result = run_qwen_lora_federated_demo(
+        job_id=None,
         rounds=2,
         local_steps=2,
         model_name="Qwen/Qwen2.5-7B-Instruct",

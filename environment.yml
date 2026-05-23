@@ -1,0 +1,19 @@
+name: sf
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - "secretflow[full]==1.13.0b0"
+      - fastapi
+      - uvicorn
+      - pydantic
+      - numpy
+      - transformers>=4.46.0
+      - accelerate
+      - peft
+      - bitsandbytes
+      - sentencepiece
+      - safetensors
+      - huggingface_hub
