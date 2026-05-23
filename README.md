@@ -24,7 +24,7 @@ fl-demo/
 conda env create -f environment.yml
 conda activate sf
 ```
-
+```bash
 npm install
 npm run install:all
 ```
