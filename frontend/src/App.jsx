@@ -26,22 +26,6 @@ export default function App() {
 
   const isLora = config.model_type === "lora";
 
-  // const handleRun = async () => {
-  //   setLoading(true);
-  //   setLogs([]);
-  //   setResult(null);
-
-  //   try {
-  //     const data = isLora ? await runLLMDemo(config) : await runDemo(config);
-  //     setLogs(data.logs);
-  //     setResult(data);
-  //   } catch (err) {
-  //     alert(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleRun = async () => {
     setLoading(true);
     setLogs([]);
