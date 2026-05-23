@@ -13,38 +13,30 @@ fl-demo/
 │  └─ src/
 │     └─ api/        # 前端调用后端 API
 └─ README.md
+```
 1. 环境准备
 
-安装 Miniconda
-# 下载
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# FL Demo
 
-# 安装
-bash Miniconda3-latest-Linux-x86_64.sh
+## First-time setup
 
-创建 Python 环境
-conda create -n sf python=3.10 -y
+```bash
+conda env create -f environment.yml
 conda activate sf
 
-安装 SecretFlow Full + SFL
-pip install "secretflow[full]==1.13.0b0"
-pip install sfl
-
-
-2. 前端环境准备
-安装 Node.js（推荐 18+）：
-# 使用 nvm 安装
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-source ~/.bashrc
-nvm install 20
-nvm use 20
-安装前端依赖
-cd fl-demo/frontend
 npm install
-npm install recharts lucide-react
+npm run install:all
+```
 
-3. 启动
-根目录下
+2. 启动
+
+'''
+conda activate sf
+export CUDA_VISIBLE_DEVICES=1
 npm start
+'''
 
+
+```
 http://127.0.0.1:5173/
+```

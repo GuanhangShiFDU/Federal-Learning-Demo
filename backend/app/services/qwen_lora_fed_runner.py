@@ -3,6 +3,7 @@ import copy
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Any
+from app.services.job_store import update_job, append_log
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -132,7 +133,7 @@ def load_qwen_lora_model(config: LLMFedConfig):
         quantization_config=quant_config,
         torch_dtype=torch_dtype,
         device_map="auto",
-        trust_remote_code=True,
+        trust_remote_code=False,
     )
 
     if config.use_4bit:
@@ -246,14 +247,22 @@ def train_one_client(
         "lora_state": local_lora_state,
     }
 
+def report(job_id, stage, progress, message):
+    if job_id:
+        update_job(job_id, stage=stage, progress=progress, message=message)
+        append_log(job_id, message)
+
 
 def run_qwen_lora_federated_demo(
+    job_id=None,
     rounds: int = 2,
     local_steps: int = 2,
     model_name: str = "Qwen/Qwen2.5-7B-Instruct",
-) -> Dict[str, Any]:
+):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+
+    report(job_id, "Preparing", 5, "Preparing Qwen LoRA federated demo.")
 
     config = LLMFedConfig(
         model_name=model_name,
@@ -263,13 +272,24 @@ def run_qwen_lora_federated_demo(
 
     started_at = time.time()
 
+    report(job_id, "Loading Model", 10, f"Loading base model: {model_name}")
     tokenizer, model = load_qwen_lora_model(config)
 
+    report(job_id, "Initializing LoRA", 35, "Extracting initial LoRA adapter tensors.")
     global_lora_state = get_lora_state_dict(model)
 
     logs = []
 
     for round_id in range(config.rounds):
+        base_progress = 40 + int((round_id / config.rounds) * 45)
+
+        report(
+            job_id,
+            f"Round {round_id + 1}/{config.rounds}",
+            base_progress,
+            f"Round {round_id + 1}: Alice local LoRA training started.",
+        )
+
         alice_result = train_one_client(
             client_name="alice",
             model=model,
@@ -277,6 +297,13 @@ def run_qwen_lora_federated_demo(
             samples=get_alice_samples(),
             global_lora_state=global_lora_state,
             config=config,
+        )
+
+        report(
+            job_id,
+            f"Round {round_id + 1}/{config.rounds}",
+            base_progress + 8,
+            f"Round {round_id + 1}: Bob local LoRA training started.",
         )
 
         bob_result = train_one_client(
@@ -288,6 +315,13 @@ def run_qwen_lora_federated_demo(
             config=config,
         )
 
+        report(
+            job_id,
+            f"Round {round_id + 1}/{config.rounds}",
+            base_progress + 15,
+            "Server is aggregating LoRA adapter tensors with FedAvg.",
+        )
+
         global_lora_state = fedavg_lora_states([
             alice_result["lora_state"],
             bob_result["lora_state"],
@@ -295,14 +329,28 @@ def run_qwen_lora_federated_demo(
 
         avg_loss = (alice_result["loss"] + bob_result["loss"]) / 2
 
-        logs.append({
+        round_log = {
             "round": round_id,
             "alice_loss": round(alice_result["loss"], 4),
             "bob_loss": round(bob_result["loss"], 4),
             "avg_loss": round(avg_loss, 4),
             "alice_steps": alice_result["steps"],
             "bob_steps": bob_result["steps"],
-        })
+        }
+
+        logs.append(round_log)
+
+        report(
+            job_id,
+            f"Round {round_id + 1}/{config.rounds}",
+            base_progress + 20,
+            f"Round {round_id + 1} completed. Avg loss={round_log['avg_loss']}",
+        )
+
+        if job_id:
+            update_job(job_id, partial_logs=logs)
+
+    report(job_id, "Finalizing", 90, "Collecting trainable parameter statistics.")
 
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in model.parameters())
@@ -324,4 +372,82 @@ def run_qwen_lora_federated_demo(
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", "not set"),
         "device": str(model.device),
     }
+
+# def run_qwen_lora_federated_demo(
+#     rounds: int = 2,
+#     local_steps: int = 2,
+#     model_name: str = "Qwen/Qwen2.5-7B-Instruct",
+# ) -> Dict[str, Any]:
+#     if torch.cuda.is_available():
+#         torch.cuda.empty_cache()
+
+#     config = LLMFedConfig(
+#         model_name=model_name,
+#         rounds=rounds,
+#         local_steps=local_steps,
+#     )
+
+#     started_at = time.time()
+
+#     tokenizer, model = load_qwen_lora_model(config)
+
+#     global_lora_state = get_lora_state_dict(model)
+
+#     logs = []
+
+#     for round_id in range(config.rounds):
+#         alice_result = train_one_client(
+#             client_name="alice",
+#             model=model,
+#             tokenizer=tokenizer,
+#             samples=get_alice_samples(),
+#             global_lora_state=global_lora_state,
+#             config=config,
+#         )
+
+#         bob_result = train_one_client(
+#             client_name="bob",
+#             model=model,
+#             tokenizer=tokenizer,
+#             samples=get_bob_samples(),
+#             global_lora_state=global_lora_state,
+#             config=config,
+#         )
+
+#         global_lora_state = fedavg_lora_states([
+#             alice_result["lora_state"],
+#             bob_result["lora_state"],
+#         ])
+
+#         avg_loss = (alice_result["loss"] + bob_result["loss"]) / 2
+
+#         logs.append({
+#             "round": round_id,
+#             "alice_loss": round(alice_result["loss"], 4),
+#             "bob_loss": round(bob_result["loss"], 4),
+#             "avg_loss": round(avg_loss, 4),
+#             "alice_steps": alice_result["steps"],
+#             "bob_steps": bob_result["steps"],
+#         })
+
+#     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+#     total_params = sum(p.numel() for p in model.parameters())
+#     elapsed = time.time() - started_at
+
+#     return {
+#         "status": "success",
+#         "message": "Qwen LoRA federated fine-tuning demo completed.",
+#         "model_name": model_name,
+#         "training_method": "LoRA / QLoRA",
+#         "aggregation": "FedAvg over LoRA adapter tensors",
+#         "rounds": config.rounds,
+#         "local_steps": config.local_steps,
+#         "logs": logs,
+#         "trainable_params": int(trainable_params),
+#         "total_params": int(total_params),
+#         "trainable_ratio": float(trainable_params / total_params),
+#         "elapsed_seconds": round(elapsed, 2),
+#         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", "not set"),
+#         "device": str(model.device),
+#     }
 
